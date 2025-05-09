@@ -17,7 +17,7 @@ This is an adaptation of the [SwiftLaTeX Texlive 2 server](https://github.com/Sw
    ```bash
    docker compose -f docker-compose.cloudflare.yml up -d
    chmod +x ./scripts/run_texlive_cloudflare_tunnel.sh
-   source ./.env && ./scripts/run_texlive_cloudflare_tunnel.sh "${CLOUDFLARE_API_KEY}" "${HOST_DOMAIN}"
+   source ./.env && ./scripts/run_texlive_cloudflare_tunnel.sh "${CLOUDFLARE_API_KEY}" "${HOST_DOMAIN}" "${PORT}"
    ```
    **NOTE** You can stop the deployment with `docker compose -f docker-compose.cloudflare.yml down` command.
 

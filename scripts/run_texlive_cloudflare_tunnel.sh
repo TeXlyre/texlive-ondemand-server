@@ -10,6 +10,7 @@ set -e
 # Parse arguments or use environment variables
 API_KEY=${1:-$CLOUDFLARE_API_KEY}
 HOST_DOMAIN=${2:-$HOST_DOMAIN}
+PORT=${3:-$PORT}
 
 if [ -z "$API_KEY" ]; then
   echo "Error: No Cloudflare API key provided"
@@ -28,7 +29,7 @@ fi
 # Configuration variables
 CLOUDFLARE_TOKEN="$API_KEY"
 TUNNEL_NAME="texlive"
-HTTP_SERVICE_URL="http://localhost:5000"
+HTTP_SERVICE_URL="http://localhost:$PORT"
 HOSTNAME="$HOST_DOMAIN"
 CREDENTIALS_DIR=~/.cloudflared/texlive
 CONFIG_FILE="$CREDENTIALS_DIR/config.yml"
