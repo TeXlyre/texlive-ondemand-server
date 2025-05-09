@@ -2,5 +2,3 @@ flask
 flask-cors
 gevent
 redis
-pykpathsea_xetex
-pykpathsea_pdftex
