@@ -1,6 +1,8 @@
+.DS_Store
 .woff
 .pdf
 .dvi
 .o
+.env
 build/
 __pycache__/

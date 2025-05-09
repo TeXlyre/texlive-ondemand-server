@@ -1,3 +1,6 @@
-flask > 0.1
-gevent > 0.1
-flask-cors>0.1
+flask
+flask-cors
+gevent
+redis
+pykpathsea_xetex
+pykpathsea_pdftex
