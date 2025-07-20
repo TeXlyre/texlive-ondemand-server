@@ -4,6 +4,18 @@ RUN   apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y wge
     python3 \
     python3-pip 
 COPY . /app
+
+#### Debug block - This is a verbose approach for adding a package, but just to see if it works ####
+RUN cd /tmp && \
+    wget https://ctan.org/tex-archive/macros/latex/contrib/zref-clever.zip && \
+    unzip zref-clever.zip && \
+    cd zref-clever && \
+    tex zref-clever.ins && \
+    mkdir -p /usr/share/texlive/texmf-dist/tex/latex/zref-clever && \
+    cp zref-clever.sty /usr/share/texlive/texmf-dist/tex/latex/zref-clever/ && \
+    mktexlsr && \
+    rm -rf /tmp/zref-clever*
+####################################################################################################
 RUN pip3 install -r /app/requirements.txt && echo "0.5"
 WORKDIR /app
 CMD ["python3", "wsgi.py"]
