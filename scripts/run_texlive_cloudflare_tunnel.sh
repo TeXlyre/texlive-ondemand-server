@@ -177,7 +177,7 @@ fi
 echo -e "${YELLOW}Checking if TeXLive server is running...${NC}"
 if ! docker ps | grep -q apt; then
     echo -e "${YELLOW}Starting TeXLive server with Docker Compose...${NC}"
-    docker-compose up -d
+    docker compose up -d
     echo -e "${GREEN}TeXLive server started${NC}"
 else
     echo -e "${GREEN}TeXLive server is already running${NC}"

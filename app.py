@@ -1,4 +1,4 @@
-from flask import Flask, send_file, make_response, send_from_directory
+from flask import Flask, send_file, make_response, send_from_directory, request
 from threading import Lock
 import time
 import os.path
@@ -10,8 +10,21 @@ import os
 import redis
 import json
 
+# Import new managers
+try:
+    from package_manager import PackageManager
+    from font_manager import FontManager
+except ImportError:
+    # Fallback if managers not available
+    PackageManager = None
+    FontManager = None
+
 app = Flask(__name__)
 redis_client = None
+
+# Initialize managers if available
+package_manager = PackageManager() if PackageManager else None
+font_manager = FontManager() if FontManager else None
 
 # Configure CORS based on environment variables
 api_origins = os.environ.get('API_ORIGINS', '')
@@ -35,6 +48,25 @@ def init_redis(redis_url):
     except Exception as e:
         app.logger.error(f"Failed to initialize Redis: {str(e)}")
         redis_client = None
+
+
+def initialize_tex_environment():
+    """Initialize complete TeX environment"""
+    try:
+        # Ensure packages are available
+        if package_manager:
+            package_manager.ensure_packages_available()
+
+        # Update font cache and database
+        if font_manager:
+            font_manager.update_font_cache()
+            font_manager.append_fonts_to_list()
+
+        app.logger.info("TeX environment initialization completed")
+        return True
+    except Exception as e:
+        app.logger.error(f"TeX environment initialization failed: {e}")
+        return False
 
 
 regex = re.compile(r'[^a-zA-Z0-9 _\-\.]')
@@ -132,3 +164,90 @@ def pdftex_fetch_pk(dpi, filename):
         response.headers['pkid'] = os.path.basename(url)
         response.headers['Access-Control-Expose-Headers'] = 'pkid'
         return response
+
+
+# New enhanced endpoints
+@app.route('/debug/tex-environment')
+@cross_origin()
+def debug_tex_environment():
+    """Debug endpoint for TeX environment status"""
+    try:
+        result = {
+            'package_manager_available': package_manager is not None,
+            'font_manager_available': font_manager is not None
+        }
+
+        if package_manager:
+            package_info = package_manager.get_package_info()
+            result['package_info'] = package_info
+
+            # Test file finding for both engines
+            test_files = ['zref-clever.sty', 'amsmath.sty', 'fontspec.sty']
+            pdftex_results = {}
+            xetex_results = {}
+
+            for filename in test_files:
+                # Test pdfTeX finding
+                pdftex_path = pykpathsea_pdftex.find_file(filename, 6)  # 6 = tex format
+                pdftex_results[filename] = {
+                    'found': pdftex_path is not None,
+                    'path': pdftex_path
+                }
+
+                # Test XeTeX finding
+                xetex_path = pykpathsea_xetex.find_file(filename, 6)
+                xetex_results[filename] = {
+                    'found': xetex_path is not None,
+                    'path': xetex_path
+                }
+
+            result['pdftex_finding'] = pdftex_results
+            result['xetex_finding'] = xetex_results
+
+        if font_manager:
+            result['font_count'] = len(font_manager.existing_fonts)
+
+        return result
+
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
+@app.route('/install-packages', methods=['POST'])
+@cross_origin()
+def install_packages():
+    """Endpoint to install specific packages"""
+    try:
+        if not package_manager:
+            return {'error': 'Package manager not available'}, 500
+
+        data = request.get_json()
+        packages = data.get('packages', [])
+
+        if not packages:
+            return {'error': 'No packages specified'}, 400
+
+        success = package_manager.install_missing_packages(packages)
+
+        return {
+            'success': success,
+            'message': f"Installation {'succeeded' if success else 'failed'} for packages: {packages}"
+        }
+
+    except Exception as e:
+        return {'error': str(e)}, 500
+
+
+@app.route('/update-fonts', methods=['POST'])
+@cross_origin()
+def update_fonts():
+    """Endpoint to manually update font database"""
+    try:
+        if not font_manager:
+            return {'error': 'Font manager not available'}, 500
+
+        font_manager.update_font_cache()
+        font_manager.append_fonts_to_list()
+        return {"status": "success", "message": "Fonts updated successfully"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
