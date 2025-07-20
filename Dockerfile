@@ -3,26 +3,33 @@ FROM ubuntu:22.04
 # Install base packages and TeX Live
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y \
     wget \
+    curl \
+    software-properties-common \
+    && add-apt-repository ppa:deadsnakes/ppa \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -q -y \
     texlive-full \
-    python3 \
-    python3-pip \
-    python3-dev \
-    build-essential \
-    libkpathsea-dev \
+    python3.8 \
+    python3.8-dev \
+    python3.8-distutils \
     fontconfig \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Install pip for Python 3.8 using legacy installer
+RUN curl https://bootstrap.pypa.io/pip/3.8/get-pip.py -o get-pip.py && \
+    python3.8 get-pip.py && \
+    rm get-pip.py
+
+# Set Python 3.8 as default python3
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 
 # Copy application files
 COPY . /app
 WORKDIR /app
 
-# Install Python dependencies
-RUN pip3 install -r requirements.txt
-
-# Build the C extensions
-RUN python3 kpathsea_xetex_setup.py build_ext --inplace
-RUN python3 kpathsea_pdftex_setup.py build_ext --inplace
+# Install Python dependencies ignoring system packages
+RUN python3.8 -m pip install --ignore-installed --break-system-packages -r requirements.txt
 
 # Install available font packages (non-critical)
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y \
@@ -48,5 +55,8 @@ RUN tlmgr update --self || true && \
     tlmgr install collection-fontsextra || true && \
     tlmgr install collection-mathscience || true && \
     mktexlsr || true
+
+# Note: Using original format files and pre-compiled .so files
+# No need to rebuild C extensions since we're using Python 3.8
 
 CMD ["python3", "wsgi.py"]
