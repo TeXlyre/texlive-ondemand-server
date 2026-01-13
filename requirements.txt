@@ -1,4 +1,4 @@
-flask
-flask-cors
-gevent
-redis
+flask==3.1.2
+flask-cors==5.0.0
+gevent==25.8.2
+redis==6.4.0
