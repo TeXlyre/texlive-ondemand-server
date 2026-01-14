@@ -16,6 +16,7 @@ RUN cd /tmp && \
     mktexlsr && \
     rm -rf /tmp/zref-clever*
 ####################################################################################################
-RUN pip3 install -r /app/requirements.txt && echo "0.5"
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install -r /app/requirements.txt && echo "0.5"
 WORKDIR /app
 CMD ["python3", "wsgi.py"]
