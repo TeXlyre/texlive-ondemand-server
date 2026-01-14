@@ -1,8 +1,13 @@
 FROM ubuntu:20.04
 RUN   apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y wget \
+    unzip \
     texlive-full \
     python3 \
-    python3-pip 
+    python3-pip \
+    build-essential \
+    python3-dev \
+    libffi-dev \
+    libc-ares-dev
 COPY . /app
 
 #### Debug block - This is a verbose approach for adding a package, but just to see if it works ####
