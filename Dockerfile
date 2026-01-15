@@ -22,6 +22,6 @@ RUN cd /tmp && \
     rm -rf /tmp/zref-clever*
 ####################################################################################################
 RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install -r /app/requirements.txt && echo "0.5"
+    python3 -m pip install --no-binary gevent -r /app/requirements.txt && echo "0.5"
 WORKDIR /app
 CMD ["python3", "wsgi.py"]
