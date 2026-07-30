@@ -10,17 +10,17 @@ RUN   apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -q -y wge
     libc-ares-dev
 COPY . /app
 
-#### Debug block - This is a verbose approach for adding a package, but just to see if it works ####
-RUN cd /tmp && \
-    wget https://ctan.org/tex-archive/macros/latex/contrib/zref-clever.zip && \
-    unzip zref-clever.zip && \
-    cd zref-clever && \
-    tex zref-clever.ins && \
-    mkdir -p /usr/share/texlive/texmf-dist/tex/latex/zref-clever && \
-    cp zref-clever.sty /usr/share/texlive/texmf-dist/tex/latex/zref-clever/ && \
-    mktexlsr && \
-    rm -rf /tmp/zref-clever*
-####################################################################################################
+# #### Debug block - This is a verbose approach for adding a package, but just to see if it works ####
+# RUN cd /tmp && \
+#     wget https://ctan.org/tex-archive/macros/latex/contrib/zref-clever.zip && \
+#     unzip zref-clever.zip && \
+#     cd zref-clever && \
+#     tex zref-clever.ins && \
+#     mkdir -p /usr/share/texlive/texmf-dist/tex/latex/zref-clever && \
+#     cp zref-clever.sty /usr/share/texlive/texmf-dist/tex/latex/zref-clever/ && \
+#     mktexlsr && \
+#     rm -rf /tmp/zref-clever*
+# ####################################################################################################
 RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install "Cython<3" && \
     python3 -m pip install --no-binary gevent --no-build-isolation -r /app/requirements.txt && echo "0.5"
